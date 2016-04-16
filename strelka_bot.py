@@ -1,11 +1,9 @@
 #!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
-from telegram import User
 from telegram.ext import Updater
 import logging
-import checker
 import os
-from time import time, ctime
 from storer import Storer
 from cardinfo import CardInfo, ThresholdExceedListener
 from userinfo import UserInfo
@@ -27,19 +25,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def get_description():
-    return """/help - Show help
-/getcardbalance - Returns balance for specified card
-/addcard - Add a card to the list of registered cards
-/removecard - Remove a card to the list of registered cards
-/getcards - Returns balance for all registered cards
-/setthreshold - Set threshold value for card(s)"""
+    return """/help - Показать помощь (список команд)
+/getcardbalance [номер карты] - Показать баланс указанной карта
+/addcard [номер карты] - Зарегестрировать(добавить) указанную карту
+/removecard [номер карты] - Удалить указанную карту
+/getcards - Показывает баланс зарегестированных карт
+/setthreshold [минимальный остаток] - Установить минимальную сумму для оповещений по картам"""
 
 def start(bot, update):
-    bot.sendMessage(update.message.chat_id, text='Hi! Use next commands:\n%s'%(get_description()))
+    bot.sendMessage(update.message.chat_id, text='Привет!:\n%s'%(get_description()))
 
 def help(bot, update):
     bot.sendMessage(update.message.chat_id
-        , text="Supported commands:\n%s"%(get_description()))
+        , text="Поддерживаемые команды:\n%s"%(get_description()))
 
 def get_cards(bot, update):
     logger.info("New get_cards message\nFrom: %s\nchat_id: %d\nText: %s" %
@@ -49,7 +47,7 @@ def get_cards(bot, update):
     telegram_user = update.message.from_user
     if not users.has_key(telegram_user.id) or len(users[telegram_user.id].cards) == 0:
         bot.sendMessage(update.message.chat_id
-        , text="There are no saved cards for you. Please add a card by typing /addcard CARD_NUMBER")
+        , text="Нет зарегестированных карт /addcard [номер карты]")
         return
 
     user = users[telegram_user.id]
@@ -57,9 +55,8 @@ def get_cards(bot, update):
     response = ""
     for card in cards.values():
         card.update()
-        if len(response) != 0:
-            response += '\n'
-        response += "Card %s balance: %.2f"%(card.card_number, card.balance)
+        if len(response) != 0: response += '\n'
+        response += "Баланс карты %s: %.2f" % (card.card_number, card.balance)
 
     bot.sendMessage(update.message.chat_id
         , text=response)
@@ -69,10 +66,13 @@ def add_card(bot, update, args):
                 (update.message.from_user,
                  update.message.chat_id,
                  update.message.text))
+
     if len(args) != 1:
         bot.sendMessage(update.message.chat_id, text="Usage:\n/addcard 1234567890")
         return
-    card_number = args[0]
+
+    card_number = args[0].encode('utf8')
+
     telegram_user = update.message.from_user
     if not users.has_key(telegram_user.id):
         users[telegram_user.id] = UserInfo(telegram_user)
@@ -175,8 +175,7 @@ def check_thresholds(bot):
 def main():
     global users
     users = storer.restore('users')
-    if users is None:
-        users = {}
+    if users is None: users = {}
 
     global job_queue
     # Create the EventHandler and pass it your bot's token.
