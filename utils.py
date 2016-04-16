@@ -8,6 +8,18 @@ UPDATE_TIMEOUT = 10. * 60 * 1000 #10 min
 
 logger = logging.getLogger(__name__)
 
+class UserInfo:
+    def __init__(self, user):
+        self.user = user
+        self.cards = {}
+
+    def add_card(self, card_number):
+        card = CardInfo(card_number)
+        if card.cardblocked:
+            return False
+        self.cards[card_number] = CardInfo(card_number)
+        return True
+
 class CardInfo:
     def __init__(self, card_number):
         self.card_number = card_number

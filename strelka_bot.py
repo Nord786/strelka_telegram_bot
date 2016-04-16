@@ -5,8 +5,7 @@ from telegram.ext import Updater
 import logging
 import os
 from storer import Storer
-from cardinfo import CardInfo, ThresholdExceedListener
-from userinfo import UserInfo
+from utils import CardInfo, UserInfo, ThresholdExceedListener
 
 STORED_FILE = os.getenv('STRELKA_STORED_FILE', 'strelka_bot_shelve.db')
 TOKEN_FILENAME = 'token.lst'
@@ -68,7 +67,7 @@ def add_card(bot, update, args):
                  update.message.text))
 
     if len(args) != 1:
-        bot.sendMessage(update.message.chat_id, text="Usage:\n/addcard 1234567890")
+        bot.sendMessage(update.message.chat_id, text="Использование:\n/addcard 1234567890")
         return
 
     card_number = args[0].encode('utf8')
@@ -81,12 +80,12 @@ def add_card(bot, update, args):
     if not user.cards.has_key(card_number):
         is_card_added = user.add_card(card_number)
         if not is_card_added:
-            bot.sendMessage(update.message.chat_id, text="Card %s is blocked and can't be added" % (card_number))
+            bot.sendMessage(update.message.chat_id, text="Карта %s заблокирована и не может быть добавлена" % (card_number))
             return
         storer.store('users', users)
-        bot.sendMessage(update.message.chat_id, text="Card %s has been successfully added" % (card_number))
+        bot.sendMessage(update.message.chat_id, text="Карта %s была успешно добавлена" % (card_number))
     else:
-        bot.sendMessage(update.message.chat_id, text="Card %s has been already added. Do nothing" % (card_number))
+        bot.sendMessage(update.message.chat_id, text="Карта %s уже добавлена" % (card_number))
 
 def remove_card(bot, update, args):
     logger.info("New remove_card message\nFrom: %s\nchat_id: %d\nText: %s" %
@@ -94,7 +93,7 @@ def remove_card(bot, update, args):
                  update.message.chat_id,
                  update.message.text))
     if len(args) != 1:
-        bot.sendMessage(update.message.chat_id, text="Usage:\n/removecard 1234567890")
+        bot.sendMessage(update.message.chat_id, text="Использование:\n/removecard 1234567890")
         return
     card_number = args[0]
     telegram_user = update.message.from_user
@@ -115,7 +114,7 @@ def set_threshold(bot, update, args):
                  update.message.chat_id,
                  update.message.text))
     if len(args) == 0:
-        bot.sendMessage(update.message.chat_id, text="Usage:\n/setthreshold threshold [card_number ...]")
+        bot.sendMessage(update.message.chat_id, text="Использование:\n/setthreshold threshold [card_number ...]")
         return
     threshold = args[0]
     card_numbers = args[1:]
@@ -148,7 +147,7 @@ def get_card_balance(bot, update, args):
                  update.message.text))
 
     if len(args) != 1:
-        bot.sendMessage(update.message.chat_id, text="Usage:\n/getcardbalance 1234567890")
+        bot.sendMessage(update.message.chat_id, text="Использование:\n/getcardbalance 1234567890")
         return
 
     card_number = args[0]
